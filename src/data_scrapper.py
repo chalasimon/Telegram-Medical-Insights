@@ -1,5 +1,6 @@
 import os
 import json
+import csv
 import time
 import asyncio
 import logging
@@ -8,6 +9,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from telethon import TelegramClient
 from tqdm.asyncio import tqdm_asyncio  # Async version of tqdm
+
 
 class TelegramScraper:
     def __init__(self, env_path="../.env", log_dir="../logs", data_dir="../data", test_mode=False):
@@ -46,10 +48,12 @@ class TelegramScraper:
         today_str = datetime.today().strftime("%Y-%m-%d")
         output_dir = self.raw_dir / today_str
         os.makedirs(output_dir, exist_ok=True)
-        output_path = output_dir / f"{channel_username[1:]}.json"
+        
+        json_path = output_dir / f"{channel_username[1:]}.json"
+        csv_path = output_dir / f"{channel_username[1:]}.csv"
 
-        if output_path.exists():
-            logging.info(f"Skipped (already exists): {output_path}")
+        if json_path.exists() and csv_path.exists():
+            logging.info(f"Skipped (already exists): {channel_username}")
             print(f"{channel_username} already scraped — skipping.")
             return
 
@@ -73,9 +77,11 @@ class TelegramScraper:
         else:
             entity = await self.client.get_entity(channel_username)
             channel_title = entity.title
-            async for msg in tqdm_asyncio(self.client.iter_messages(entity, limit=msg_limit), 
-                                          total=msg_limit, 
-                                          desc=f"Scraping {channel_username}"):
+            async for msg in tqdm_asyncio(
+                self.client.iter_messages(entity, limit=msg_limit), 
+                total=msg_limit, 
+                desc=f"Scraping {channel_username}"
+            ):
                 msg_dict = {
                     "channel_title": channel_title,
                     "channel_username": channel_username,
@@ -100,12 +106,19 @@ class TelegramScraper:
                 messages.append(msg_dict)
 
         # Save JSON
-        with open(output_path, "w", encoding="utf-8") as f:
+        with open(json_path, "w", encoding="utf-8") as f:
             json.dump(messages, f, ensure_ascii=False, indent=2)
+
+        # Save CSV
+        if messages:
+            with open(csv_path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=messages[0].keys())
+                writer.writeheader()
+                writer.writerows(messages)
 
         duration = time.time() - start_time
         logging.info(f"{channel_username} scraped in {duration:.2f} sec. {len(messages)} messages saved.")
-        print(f"{channel_username} scraped in {duration:.2f} sec. Messages saved to {output_path}")
+        print(f"{channel_username} scraped in {duration:.2f} sec. Messages saved to {json_path} and {csv_path}")
 
     async def scrape_channels(self, channels, msg_limit=1000):
         if not self.test_mode:

@@ -8,11 +8,11 @@
 .venv/
 
 # data
-.data/
+data/
 # build artifacts
 build/
 dist/
-
+scraper/
 # python cache
 __pycache__/
 *.pyc
