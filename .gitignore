@@ -1,0 +1,14 @@
+# ide and editor settings
+.vscode/
+# python history
+.history/
+.idea/
+# python environment
+.env
+.venv/
+
+# data
+.data/
+# build artifacts
+build/
+dist/
