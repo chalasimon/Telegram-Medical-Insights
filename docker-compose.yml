@@ -1,19 +1,9 @@
-version: '3.10'
+version: "3.10"
 
 services:
-  app:
-    build: .
-    env_file: .env  # Load environment variables
-    ports:
-      - "5000:5000"  # Example port mapping
-    depends_on:
-      - db
-    volumes:
-      - .:/app  # Sync local files with container
-
   db:
-    image: postgres:13
-    env_file: .env
+    image: postgres:15
+    container_name: telegram_medical_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -21,7 +11,18 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: telegram_medical_app
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+    command: bash
 
 volumes:
-  postgres_data:
+  pgdata:
