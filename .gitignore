@@ -1,0 +1,24 @@
+# ide and editor settings
+.vscode/
+# python history
+.history/
+.idea/
+# python environment
+.env
+.venv/
+
+# data
+.data/
+# build artifacts
+build/
+dist/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+
+setup.py
