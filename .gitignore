@@ -12,3 +12,13 @@
 # build artifacts
 build/
 dist/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+
+setup.py
