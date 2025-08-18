@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: dim_channels
+    description: "Dimension table containing unique Telegram channels"
+    columns:
+      - name: channel_id
+        description: "Unique identifier for each channel"
+        tests:
+          - not_null
+          - unique
+      - name: channel_name
+        description: "Display name of the channel"

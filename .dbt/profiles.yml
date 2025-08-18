@@ -1,0 +1,12 @@
+telegram_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: postgres        #  DB user
+      password: postgres  #  DB password
+      port: 5432
+      dbname: telegram_medical   #  DB name
+      schema: analytics       #  schema dbt will use (can be "staging" or "analytics")
+      threads: 4
