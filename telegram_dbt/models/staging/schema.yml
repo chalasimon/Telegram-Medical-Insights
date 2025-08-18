@@ -15,3 +15,6 @@ tests:
     test: |
       select * from {{ ref('stg_telegram_messages') }}
       where date > now()
+  - relationships:
+      - from: fct_messages.channel_id
+        to: dim_channels.channel_id
