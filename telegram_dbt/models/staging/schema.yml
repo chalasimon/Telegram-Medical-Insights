@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_telegram_messages
+    description: "Cleaned staging table for telegram messages"
+    columns:
+      - name: message_id
+        description: "Unique ID for each message"
+        tests:
+          - not_null
+          - unique
+
+tests:
+  - name: no_future_dates
+    test: |
+      select * from {{ ref('stg_telegram_messages') }}
+      where date > now()

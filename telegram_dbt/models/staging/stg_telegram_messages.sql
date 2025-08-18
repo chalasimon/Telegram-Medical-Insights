@@ -1,14 +1,15 @@
 with source as (
-    select * from raw.raw_telegram_messages
+    select * from raw.telegram_messages
 ),
 renamed as (
     select
         id::bigint as message_id,
-        channel_id::bigint,
-        sender::text,
-        message::text,
-        date::timestamp,
-        case when media_url is not null then true else false end as has_image
+        channel_username,
+        channel_title,
+        text as message,
+        date,
+        views,
+        case when media_path is not null then true else false end as has_image
     from source
 )
-select * from renamed;
+select * from renamed
