@@ -43,6 +43,20 @@ class Database:
             self.connection.rollback()
         finally:
             cursor.close()
+
+    def insert_data(self, insert_sql, data):
+        if self.connection is None:
+            print("No connection to the database. Please connect first.")
+            return
+        
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(insert_sql, data)
+            self.connection.commit()
+            print("Data inserted successfully.")
+        except Exception as e:
+            print(f"An error occurred while inserting data: {e}")
+            self.connection.rollback()
     def close(self):
         if self.connection:
             self.connection.close()
