@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_telegram_messages
+    columns:
+      - name: message_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_channels
+    columns:
+      - name: channel_id
+        tests:
+          - not_null
+          - unique
+
+tests:
+  - name: no_future_dates
+    test: |
+      select * from {{ ref('stg_telegram_messages') }}
+      where date > now()
