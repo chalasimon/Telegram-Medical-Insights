@@ -12,14 +12,19 @@ def read_root():
 
 
 # to get top 10 products
+from fastapi import HTTPException
+
 @app.get("/api/reports/top-products", response_model=list[ProductReport])
 def top_products(limit: int = 10):
-    return get_top_products(limit)
+    try:
+        return get_top_products(limit)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # to get channel activity
-@app.get("/api/channels/{channel_name}/activity", response_model=ChannelActivity)
-def channel_activity(channel_name: str):
-    return get_channel_activity(channel_name)
+@app.get("/api/channels/{channel_id}/activity", response_model=ChannelActivity)
+def channel_activity(channel_id: str):
+    return get_channel_activity(channel_id)
 
 # to search messages
 @app.get("/api/search/messages", response_model=list[MessageSearchResult])
