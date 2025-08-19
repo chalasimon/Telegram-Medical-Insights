@@ -23,8 +23,16 @@ def scrape_telegram_data():
 
 @op
 def load_raw_to_postgres():
-    # TODO: Add logic to load raw data to Postgres
-    pass
+    import subprocess
+    # Run the notebook using papermill
+    result = subprocess.run([
+        "papermill",
+        "notebooks/02_data_modelling.ipynb",
+        "notebooks/02_data_modelling_output.ipynb"
+    ], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"Notebook execution failed: {result.stderr}")
+    return "Raw data loaded to Postgres via notebook"
 
 @op
 def run_dbt_transformations():
