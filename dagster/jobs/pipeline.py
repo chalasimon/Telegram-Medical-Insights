@@ -1,13 +1,29 @@
 from dagster import op, job
 from dagster import ScheduleDefinition
+
 @op
 def scrape_telegram_data():
-    # TODO: Add scraping logic
-    pass
+    from src.data_scrapper import TelegramScraper
+    import asyncio
+
+    # Example channels to scrape
+    channels = [
+            "@lobelia4cosmetics",
+            "@tikvahpharma",
+            "@yetenaweg",
+            "@ethiopianfoodanddrugauthority",
+            "@CheMed123",
+            "@newoptics",
+    ]
+
+    scraper = TelegramScraper(env_path="../.env", log_dir="../logs", data_dir="../data", test_mode=False)
+    asyncio.run(scraper.scrape_channels(channels, msg_limit=1000))
+    return "Scraping completed"
+
 
 @op
 def load_raw_to_postgres():
-    # TODO: Add loading logic
+    # TODO: Add logic to load raw data to Postgres
     pass
 
 @op
