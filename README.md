@@ -75,7 +75,7 @@ docker-compose up -d
 5. Initialize the PostgreSQL database:
 
 ```bash
-docker exec -it telegram_medical_insights_db psql -U postgres -c "CREATE DATABASE telegram_insights;"
+docker exec -it telegram_medical psql -U postgres
 ```
 6. Run dbt to set up the data warehouse:
 
@@ -104,7 +104,7 @@ Telegram-Medical-Insights/
 ├── api/                   # FastAPI application
 │   ├── main.py            # FastAPI entry point
 ├── notebooks/              # Jupyter notebooks for analysis
-├── telegram_dpt/          # DPT  models and configurations
+├── telegram_dbt/          # DBT  models and configurations
 │   ├── models/            # dbt models
 │   │   ├── marts/         # Fact and dimension tables
 │   │   └── staging/       # Staging models
