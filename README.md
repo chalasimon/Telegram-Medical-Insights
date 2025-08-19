@@ -1,7 +1,7 @@
 # Telegram Medical Insights
-
-An end-to-end data pipeline for Telegram, designed to extract, transform, and expose insights about Ethiopian medical businesses. This project leverages **Python**, **PostgreSQL**, **Docker**, **dbt**, **FastAPI**, and **Dagster**.
-
+A modern data pipeline for analyzing Ethiopian medical businesses using public Telegram channel data.  
+The project integrates scraping, ELT pipelines, dbt transformations, and enrichment with YOLO-based image object detection.  
+This README provides an overview of the project, its features, and how to set it up and run it locally.
 ---
 
 ## Table of Contents
@@ -106,7 +106,13 @@ Telegram-Medical-Insights/
 ├── api/                   # FastAPI application
 │   ├── main.py            # FastAPI entry point
 ├── notebooks/              # Jupyter notebooks for analysis
-├── dagster/              # Dagster pipeline
+├── telegram_dpt/          # DPT  models and configurations
+│   ├── models/            # dbt models
+│   │   ├── marts/         # Fact and dimension tables
+│   │   └── staging/       # Staging models
+│   ├── dbt_project.yml    # dbt project configuration
+│   └── profiles.yml       # dbt profiles configuration
+├── dagster/               # Dagster configurations
 │   ├── jobs/              # Dagster jobs
 ├── docs/                   # Documentation
 ├── screenshots/           # Screenshots for documentation
