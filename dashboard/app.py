@@ -34,14 +34,18 @@ st.header("Search Products")
 search_term = st.text_input("Enter keyword to search products:")
 if search_term:
     try:
-         query = """
-            SELECT message_id, channel_id, message
+        query = """
+            SELECT message_id, channel_id, message, date
             FROM fct_messages
             WHERE message ILIKE %s
             LIMIT 50;
-            """
-         df_search = pd.read_sql(query, conn, params=(f"%{search_term}%",))
-         st.write(df_search)
+        """
+        df_search = pd.read_sql(query, conn, params=(f"%{search_term}%",))
+        st.write(df_search)
+        # Time series visualization
+        if 'date' in df_search.columns:
+            df_search['date'] = pd.to_datetime(df_search['date'])
+            st.line_chart(df_search.groupby(df_search['date'].dt.date).size())
     except Exception as e:
         st.warning(f"Could not search messages: {e}")
 
