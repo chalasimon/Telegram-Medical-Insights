@@ -88,3 +88,22 @@ def run_yolo_on_image(model, image_path):
             "bbox_ymax": float(ymax),
         })
     return dets
+def insert_detections(conn, rows):
+    """
+    rows: list of tuples matching raw.image_detections columns except detection_id:
+      (message_id, image_path, detected_class, confidence,
+       bbox_xmin, bbox_ymin, bbox_xmax, bbox_ymax, model_name)
+    """
+    if not rows:
+        return 0
+    sql = """
+    insert into raw.image_detections
+    (message_id, image_path, detected_class, confidence,
+     bbox_xmin, bbox_ymin, bbox_xmax, bbox_ymax, model_name)
+    values %s
+    on conflict do nothing
+    """
+    with conn.cursor() as cur:
+        execute_values(cur, sql, rows)
+    conn.commit()
+    return len(rows)
