@@ -20,3 +20,8 @@ def top_products(limit: int = 10):
 @app.get("/api/channels/{channel_name}/activity", response_model=ChannelActivity)
 def channel_activity(channel_name: str):
     return get_channel_activity(channel_name)
+
+# to search messages
+@app.get("/api/search/messages", response_model=list[MessageSearchResult])
+def search_messages_endpoint(query: str):
+    return search_messages(query)
