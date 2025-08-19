@@ -1,4 +1,5 @@
 from dagster import op, job
+from dagster import ScheduleDefinition
 @op
 def scrape_telegram_data():
     # TODO: Add scraping logic
@@ -25,3 +26,8 @@ def telegram_medical_pipeline():
     load_raw_to_postgres()
     run_dbt_transformations()
     run_yolo_enrichment()
+
+daily_schedule = ScheduleDefinition(
+    job=telegram_medical_pipeline,
+    cron_schedule="0 0 * * *",  # every day at midnight
+)
