@@ -45,8 +45,16 @@ def run_dbt_transformations():
 
 @op
 def run_yolo_enrichment():
-    # TODO: Add YOLO enrichment logic
-    pass
+    import subprocess
+    # Run the YOLO enrichment notebook using papermill
+    result = subprocess.run([
+        "papermill",
+        "notebooks/03_data_enrichment.ipynb",
+        "notebooks/03_data_enrichment_output.ipynb"
+    ], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"YOLO enrichment notebook failed: {result.stderr}")
+    return "YOLO enrichment completed via notebook"
 
 @job
 def telegram_medical_pipeline():
