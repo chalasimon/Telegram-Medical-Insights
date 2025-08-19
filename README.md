@@ -2,6 +2,8 @@
 A modern data pipeline for analyzing Ethiopian medical businesses using public Telegram channel data.  
 The project integrates scraping, ELT pipelines, dbt transformations, and enrichment with YOLO-based image object detection.  
 This README provides an overview of the project, its features, and how to set it up and run it locally.
+
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)  
@@ -36,7 +38,8 @@ Key functionalities include:
 - **Data lake & warehouse**: Layered structure for reliable ELT  
 - **Data modeling**: Star schema with fact & dimension tables  
 - **Data enrichment**: YOLOv8 object detection on images  
-- **Analytical API**: Query insights such as top products, channel activity, and search messages  
+- **Analytical API**: Query insights such as top products, channel activity, and search messages 
+- **Dagster orchestration**: Automated end-to-end workflow using Dagster, including notebook execution with papermill 
 - **Reproducible environment**: Dockerized Python and PostgreSQL setup  
 
 ---
@@ -137,7 +140,12 @@ TELEGRAM_API_HASH=your_api_hash
 POSTGRES_USER=postgres_user
 POSTGRES_PASSWORD=your_password
 POSTGRES_DB=telegram_insights
-```
+
+``` 
+
+## Orchestration & Automation
+
+The entire pipeline is orchestrated using Dagster. Each step (scraping, loading, dbt, enrichment) is automated and can be run or scheduled from the Dagster UI. Notebooks are executed via papermill for seamless integration.
 
 ## Contributing
 Contributions are welcome! Please follow these steps:
