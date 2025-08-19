@@ -18,3 +18,10 @@ def run_dbt_transformations():
 def run_yolo_enrichment():
     # TODO: Add YOLO enrichment logic
     pass
+
+@job
+def telegram_medical_pipeline():
+    scrape_telegram_data()
+    load_raw_to_postgres()
+    run_dbt_transformations()
+    run_yolo_enrichment()
