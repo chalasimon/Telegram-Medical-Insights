@@ -2,8 +2,6 @@
 A modern data pipeline for analyzing Ethiopian medical businesses using public Telegram channel data.  
 The project integrates scraping, ELT pipelines, dbt transformations, and enrichment with YOLO-based image object detection.  
 This README provides an overview of the project, its features, and how to set it up and run it locally.
----
-
 ## Table of Contents
 
 - [Project Overview](#project-overview)  
