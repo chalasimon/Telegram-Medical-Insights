@@ -29,6 +29,22 @@ db = Database(host=host,database=dbname, user=user, password=password, port=port
 conn = db.connect()
 
 
+# Example: Product Search
+st.header("Search Products")
+search_term = st.text_input("Enter keyword to search products:")
+if search_term:
+    try:
+         query = """
+            SELECT message_id, channel_id, message
+            FROM fct_messages
+            WHERE message ILIKE %s
+            LIMIT 50;
+            """
+         df_search = pd.read_sql(query, conn, params=(f"%{search_term}%",))
+         st.write(df_search)
+    except Exception as e:
+        st.warning(f"Could not search messages: {e}")
+
 # Example: Top Products
 st.header("Top Mentioned Products")
 try:
@@ -54,15 +70,6 @@ except Exception as e:
     st.warning(f"Could not load channel activity: {e}")
 
 
-# Example: Message Search
-st.header("Search Messages")
-search_term = st.text_input("Enter keyword to search messages:")
-if search_term:
-    try:
-        query = f"SELECT id as message_id, channel_id, message FROM fct_messages WHERE message ILIKE '%{search_term}%' LIMIT 20;"
-        df_search = pd.read_sql(query, conn)
-        st.write(df_search)
-    except Exception as e:
-        st.warning(f"Could not search messages: {e}")
+
 
 conn.close()
