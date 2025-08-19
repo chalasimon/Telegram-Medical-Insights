@@ -61,19 +61,37 @@ except Exception as e:
 # Example: Channel Activity
 st.header("Channel Activity")
 try:
-    query = """
-        SELECT channel_id,
-               COUNT(*) FILTER (WHERE date >= CURRENT_DATE - INTERVAL '1 day') AS daily_posts,
-               COUNT(*) FILTER (WHERE date >= CURRENT_DATE - INTERVAL '7 days') AS weekly_posts
-        FROM fct_messages
-        GROUP BY channel_id
-    """
-    df_channels = pd.read_sql(query, conn)
+    # Channel filter
+    query_channels = "SELECT DISTINCT channel_id FROM fct_messages;"
+    df_channel_list = pd.read_sql(query_channels, conn)
+    channel_options = df_channel_list['channel_id'].tolist()
+    selected_channel = st.selectbox("Select Channel", options=["All"] + channel_options)
+    if selected_channel == "All":
+        query = """
+            SELECT channel_id,
+                   COUNT(*) FILTER (WHERE date >= CURRENT_DATE - INTERVAL '1 day') AS daily_posts,
+                   COUNT(*) FILTER (WHERE date >= CURRENT_DATE - INTERVAL '7 days') AS weekly_posts
+            FROM fct_messages
+            GROUP BY channel_id
+        """
+        df_channels = pd.read_sql(query, conn)
+    else:
+        query = """
+            SELECT channel_id,
+                   COUNT(*) FILTER (WHERE date >= CURRENT_DATE - INTERVAL '1 day') AS daily_posts,
+                   COUNT(*) FILTER (WHERE date >= CURRENT_DATE - INTERVAL '7 days') AS weekly_posts
+            FROM fct_messages
+            WHERE channel_id = %s
+            GROUP BY channel_id
+        """
+        df_channels = pd.read_sql(query, conn, params=(selected_channel,))
     st.dataframe(df_channels)
+    # Business insights panel
+    st.subheader("Business Insights")
+    if not df_channels.empty:
+        st.write(f"Channel with most posts in last 7 days: {df_channels.loc[df_channels['weekly_posts'].idxmax(), 'channel_id']} ({df_channels['weekly_posts'].max()} posts)")
 except Exception as e:
     st.warning(f"Could not load channel activity: {e}")
-
-
 
 
 conn.close()
