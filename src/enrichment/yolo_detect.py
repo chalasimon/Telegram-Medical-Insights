@@ -53,3 +53,38 @@ def select_images_to_process(conn, limit=None, rerun=False):
     if missing > 0:
         logging.warning(f"Skipping {missing} images that are missing on disk.")
     return filtered
+def run_yolo_on_image(model, image_path):
+    """
+    Returns list of dicts: [{detected_class, confidence, bbox(xmin,ymin,xmax,ymax)}...]
+    """
+    # basic sanity check: openable
+    try:
+        Image.open(image_path).close()
+    except Exception as e:
+        logging.warning(f"Cannot open image {image_path}: {e}")
+        return []
+
+    results = model.predict(source=image_path, conf=0.25, verbose=False)
+    if not results:
+        return []
+
+    dets = []
+    r = results[0]
+    if r.boxes is None or r.boxes.xyxy is None:
+        return dets
+
+    xyxy = r.boxes.xyxy.cpu().numpy().tolist()
+    conf = r.boxes.conf.cpu().numpy().tolist()
+    cls  = r.boxes.cls.cpu().numpy().tolist()
+
+    for (xmin, ymin, xmax, ymax), c, k in zip(xyxy, conf, cls):
+        name = model.names.get(int(k), str(int(k))) if hasattr(model, "names") else str(int(k))
+        dets.append({
+            "detected_class": name,
+            "confidence": float(c),
+            "bbox_xmin": float(xmin),
+            "bbox_ymin": float(ymin),
+            "bbox_xmax": float(xmax),
+            "bbox_ymax": float(ymax),
+        })
+    return dets
