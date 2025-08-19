@@ -9,3 +9,10 @@ app = FastAPI()
 @app.get("/")
 def read_root():
     return {"message": "Telegram Medical Insights API is running!"}
+
+
+# to get top 10 products
+@app.get("/api/reports/top-products", response_model=list[ProductReport])
+def top_products(limit: int = 10):
+    return get_top_products(limit)
+
