@@ -36,8 +36,12 @@ def load_raw_to_postgres():
 
 @op
 def run_dbt_transformations():
-    # TODO: Add dbt run logic
-    pass
+    import subprocess
+    # Run dbt transformations
+    result = subprocess.run(["dbt", "run"], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"dbt run failed: {result.stderr}")
+    return "dbt transformations completed"
 
 @op
 def run_yolo_enrichment():
