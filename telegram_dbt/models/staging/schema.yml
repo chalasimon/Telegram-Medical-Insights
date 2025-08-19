@@ -9,6 +9,13 @@ models:
         tests:
           - not_null
           - unique
+  - name: stg_image_detections
+    description: "YOLO detections staging"
+    columns:
+      - name: detection_id
+        tests: [not_null, unique]
+      - name: message_id
+        tests: [not_null]
 
 tests:
   - name: no_future_dates
