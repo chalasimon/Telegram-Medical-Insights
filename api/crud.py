@@ -29,3 +29,15 @@ def get_channel_activity(channel_name: str):
             cur.execute(query, (channel_name,))
             result = cur.fetchone()
             return result
+# search messages 
+def search_messages(query_str: str):
+    query = """
+        SELECT message_id, channel_name, content
+        FROM fct_messages
+        WHERE content ILIKE %s
+        LIMIT 50;
+    """
+    with get_db_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (f"%{query_str}%",))
+            return cur.fetchall()
