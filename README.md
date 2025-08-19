@@ -32,15 +32,22 @@ Key functionalities include:
 
 ---
 
+
 ## Features
 
-- **Telegram scraping**: Collect messages, media, and metadata  
-- **Data lake & warehouse**: Layered structure for reliable ELT  
-- **Data modeling**: Star schema with fact & dimension tables  
-- **Data enrichment**: YOLOv8 object detection on images  
-- **Analytical API**: Query insights such as top products, channel activity, and search messages 
-- **Dagster orchestration**: Automated end-to-end workflow using Dagster, including notebook execution with papermill 
-- **Reproducible environment**: Dockerized Python and PostgreSQL setup  
+- **Telegram scraping**: Collect messages, media, and metadata
+- **Data lake & warehouse**: Layered structure for reliable ELT
+- **Data modeling**: Star schema with fact & dimension tables
+- **Data enrichment**: YOLOv8 object detection on images
+- **Analytical API**: Query insights such as top products, channel activity, and search messages
+- **Interactive Dashboard**: Streamlit dashboard for business insights, including:
+  - Product search and time series visualization
+  - Top mentioned products (bar chart, summary panel)
+  - Channel activity with filters and trend analysis
+  - Date range and product/channel filters for custom analysis
+  - Business insights panels (e.g., most active channel, total messages)
+- **Dagster orchestration**: Automated end-to-end workflow using Dagster, including notebook execution with papermill
+- **Reproducible environment**: Dockerized Python and PostgreSQL setup
 
 ---
 
@@ -129,8 +136,16 @@ To run the project, follow these steps:
 2. Activate the Python virtual environment.
 3. Run the FastAPI server with `uvicorn app.main:app --reload`.
 4. Access the API at `http://localhost:8000/docs` for Swagger UI.
-5. Open the Dagster UI at `http://localhost:3000` to monitor and
-manage the data pipeline.
+5. Open the Dagster UI at `http://localhost:3000` to monitor and manage the data pipeline.
+6. Start the Streamlit dashboard for interactive business insights:
+   ```bash
+   streamlit run dashboard/app.py
+   ```
+7. Use the dashboard to:
+   - Search products and messages
+   - Visualize top products and trends
+   - Analyze channel activity with filters
+   - View business insights panels
 ## Environment Variables
 Create a `.env` file in the root directory with the following variables:
 ```plaintext
@@ -143,9 +158,21 @@ POSTGRES_DB=telegram_insights
 
 ``` 
 
+
 ## Orchestration & Automation
 
 The entire pipeline is orchestrated using Dagster. Each step (scraping, loading, dbt, enrichment) is automated and can be run or scheduled from the Dagster UI. Notebooks are executed via papermill for seamless integration.
+
+## Business Insights & Dashboard
+
+The Streamlit dashboard provides:
+- Product search and time series analysis
+- Top mentioned products (bar chart, pie chart, summary)
+- Channel activity with date range and channel filters
+- Business insights panels (e.g., most active channel, total messages)
+- Trend visualizations for message and channel activity
+
+This makes the project immediately valuable for finance and business stakeholders, enabling data-driven decisions and risk analysis.
 
 ## Contributing
 Contributions are welcome! Please follow these steps:
