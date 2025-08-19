@@ -10,3 +10,12 @@ def get_db_connection():
         port=os.getenv("POSTGRES_PORT", "5432")
     )
     return conn
+def test_connection():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1;")
+                return cur.fetchone() is not None
+    except Exception as e:
+        print(f"Database connection failed: {e}")
+        return False
