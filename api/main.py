@@ -16,3 +16,7 @@ def read_root():
 def top_products(limit: int = 10):
     return get_top_products(limit)
 
+# to get channel activity
+@app.get("/api/channels/{channel_name}/activity", response_model=ChannelActivity)
+def channel_activity(channel_name: str):
+    return get_channel_activity(channel_name)
