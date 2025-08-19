@@ -11,3 +11,10 @@ models:
           - unique
       - name: channel_name
         description: "Display name of the channel"
+  - name: fct_image_detections
+    description: "One row per detected object on a Telegram image"
+    columns:
+      - name: detection_id
+        tests: [not_null, unique]
+      - name: message_id
+        tests: [not_null]
