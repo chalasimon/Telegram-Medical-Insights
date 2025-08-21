@@ -31,8 +31,7 @@ conn = db.connect()
 
 # Example: Product Search
 st.header("Search Products")
-st.text_input("Enter keyword to search products:", help="Type a product or keyword to filter messages.")
-st.markdown("ℹ️ **Tip:** Use the filters below to refine your search results.", unsafe_allow_html=True)
+search_term = st.text_input("Enter keyword to search products:", help="Type a product or keyword to filter messages.")
 date_range = st.date_input("Select date range:", [])
 try:
     query = "SELECT message_id, channel_id, message, date FROM fct_messages WHERE TRUE"
@@ -49,24 +48,9 @@ try:
     # Time series visualization
     if 'date' in df_search.columns and not df_search.empty:
         df_search['date'] = pd.to_datetime(df_search['date'])
-        st.line_chart(df_search.groupby(df_search['date'].dt.date).size(), use_container_width=True)
-        st.caption("Hover over the chart for daily message counts.")
+        st.line_chart(df_search.groupby(df_search['date'].dt.date).size())
 except Exception as e:
     st.warning(f"Could not search messages: {e}")
-
-# Additional filters
-min_length = st.slider("Minimum message length", min_value=0, max_value=500, value=0, help="Filter messages by minimum length.")
-# Example: If you have product categories in your data
-category_options = ["All"] + list(df_search['product_category'].unique()) if 'product_category' in df_search.columns else []
-selected_category = st.selectbox("Product Category", options=category_options, help="Filter by product category.")
-
-# Update query logic
-if min_length > 0:
-    query += " AND LENGTH(message) >= %s"
-    params.append(min_length)
-if selected_category and selected_category != "All":
-    query += " AND product_category = %s"
-    params.append(selected_category)
 
 # Example: Top Products
 st.header("Top Mentioned Products")
