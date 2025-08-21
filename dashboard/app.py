@@ -1,3 +1,5 @@
+from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid.shared import GridUpdateMode
 import streamlit as st
 import pandas as pd
 import psycopg2
@@ -86,9 +88,35 @@ if task == "Search Products":
         if len(date_range) == 2:
             query += " AND date BETWEEN %s AND %s"
             params.extend([date_range[0], date_range[1]])
-        query += " LIMIT 50;"
+        # Removed LIMIT to show all available data
         df_search = pd.read_sql(query, conn, params=params if params else None)
-        st.dataframe(df_search, use_container_width=True)
+        # Ensure message_id is string for AgGrid compatibility and reset index for selection reliability
+        if 'message_id' in df_search.columns:
+            df_search['message_id'] = df_search['message_id'].astype(str)
+        df_search = df_search.reset_index(drop=True)
+        gb = GridOptionsBuilder.from_dataframe(df_search)
+        gb.configure_selection('single')
+        grid_options = gb.build()
+        grid_response = AgGrid(
+            df_search,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            height=350,
+            theme='streamlit',
+            enable_enterprise_modules=False
+        )
+        selected = grid_response.get('selected_rows', [])
+        st.write("Selected rows from AgGrid:", selected)
+        if selected:
+            selected_row = selected[0]
+            st.write("Selected row dict:", selected_row)
+            st.write("Selected row keys:", list(selected_row.keys()))
+            msg_id = selected_row.get('message_id', None)
+            st.write("Extracted message_id:", msg_id)
+            if msg_id is not None:
+                st.success(f"Selected message_id: {msg_id}")
+            else:
+                st.info("No message_id found in selected row.")
         # Time series visualization
         if 'date' in df_search.columns and not df_search.empty:
             df_search['date'] = pd.to_datetime(df_search['date'])
@@ -98,7 +126,7 @@ if task == "Search Products":
     st.markdown('</div>', unsafe_allow_html=True)
 
 elif task == "Top Mentioned Products":
-    st.markdown('<div class="main-section">', unsafe_allow_html=True)
+    
     st.markdown('<div class="section-header">🏆 Top Mentioned Products</div>', unsafe_allow_html=True)
     product_filter = st.text_input("Filter products:", help="Type to filter top products.")
     try:
@@ -116,7 +144,7 @@ elif task == "Top Mentioned Products":
     st.markdown('</div>', unsafe_allow_html=True)
 
 elif task == "Channel Activity":
-    st.markdown('<div class="main-section">', unsafe_allow_html=True)
+    
     st.markdown('<div class="section-header">📊 Channel Activity</div>', unsafe_allow_html=True)
     try:
         # Channel filter
