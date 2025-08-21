@@ -7,7 +7,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.database.Connection import Database
 
-st.title("Telegram Medical Insights Dashboard")
 
 # Database connection
 host = "localhost"
@@ -33,27 +32,49 @@ conn = db.connect()
 
 # Using "with" notation
 with st.sidebar:
-    st.title("Dashboard")
-    st.text("________________________")
-    st.markdown("## Navigate Tasks")
+    st.markdown("""
+        <style>
+        .sidebar-title {font-size:2em; font-weight:bold; color:#2c3e50; margin-bottom:0.5em;}
+        .sidebar-nav .active {background-color:#e1eafc; color:#1a73e8; font-weight:bold; border-radius:8px;}
+        .sidebar-nav button {width:100%; text-align:left; margin-bottom:0.5em; font-size:1.1em;}
+        </style>
+    """, unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-title">🩺 Dashboard</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("## Navigation")
     nav_options = [
-        "Search Products",
-        "Top Mentioned Products",
-        "Channel Activity"
+        ("Search Products", "🔍 Search Products"),
+        ("Top Mentioned Products", "🏆 Top Mentioned Products"),
+        ("Channel Activity", "📊 Channel Activity")
     ]
     if "sidebar_task" not in st.session_state:
-        st.session_state["sidebar_task"] = nav_options[0]
-    for option in nav_options:
-        if st.button(option, key=option):
+        st.session_state["sidebar_task"] = nav_options[0][0]
+    for option, label in nav_options:
+        if st.session_state["sidebar_task"] == option:
+            btn_style = "sidebar-nav active"
+        else:
+            btn_style = "sidebar-nav"
+        if st.button(label, key=option):
             st.session_state["sidebar_task"] = option
     task = st.session_state["sidebar_task"]
    
 
 
 
-# Navigational menu logic
+
+# Professional dashboard layout
+st.markdown("""
+    <style>
+    .main-title {font-size:2.5em; font-weight:bold; color:#1a73e8; margin-bottom:0.2em;}
+    .main-section {background-color:#f8fafc; border-radius:12px; padding:2em 2em 1em 2em; margin-bottom:2em; box-shadow:0 2px 8px #e1eafc;}
+    .section-header {font-size:1.5em; font-weight:bold; color:#2c3e50; margin-bottom:1em;}
+    </style>
+""", unsafe_allow_html=True)
+st.markdown('<div class="main-title">Telegram Medical Insights Dashboard</div>', unsafe_allow_html=True)
+
 if task == "Search Products":
-    st.header("Search Products")
+
+    st.markdown('<div class="section-header">🔍 Search Products</div>', unsafe_allow_html=True)
     search_term = st.text_input("Enter keyword to search products:", help="Type a product or keyword to filter messages.")
     date_range = st.date_input("Select date range:", [])
     try:
@@ -67,16 +88,18 @@ if task == "Search Products":
             params.extend([date_range[0], date_range[1]])
         query += " LIMIT 50;"
         df_search = pd.read_sql(query, conn, params=params if params else None)
-        st.write(df_search)
+        st.dataframe(df_search, use_container_width=True)
         # Time series visualization
         if 'date' in df_search.columns and not df_search.empty:
             df_search['date'] = pd.to_datetime(df_search['date'])
             st.line_chart(df_search.groupby(df_search['date'].dt.date).size())
     except Exception as e:
         st.warning(f"Could not search messages: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 elif task == "Top Mentioned Products":
-    st.header("Top Mentioned Products")
+    st.markdown('<div class="main-section">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">🏆 Top Mentioned Products</div>', unsafe_allow_html=True)
     product_filter = st.text_input("Filter products:", help="Type to filter top products.")
     try:
         query = "SELECT message as product_name, COUNT(*) as mention_count FROM fct_messages GROUP BY message ORDER BY mention_count DESC LIMIT 10;"
@@ -90,9 +113,11 @@ elif task == "Top Mentioned Products":
         st.write(df_products.describe())
     except Exception as e:
         st.warning(f"Could not load top products: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 elif task == "Channel Activity":
-    st.header("Channel Activity")
+    st.markdown('<div class="main-section">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📊 Channel Activity</div>', unsafe_allow_html=True)
     try:
         # Channel filter
         query_channels = "SELECT DISTINCT channel_id FROM fct_messages;"
@@ -116,7 +141,7 @@ elif task == "Channel Activity":
                 params.extend([date_range_channel[0], date_range_channel[1]])
             query += " GROUP BY channel_id"
             df_channels = pd.read_sql(query, conn, params=params)
-        st.dataframe(df_channels)
+        st.dataframe(df_channels, use_container_width=True)
         # Business insights panel
         st.subheader("Business Insights")
         if not df_channels.empty:
@@ -129,6 +154,7 @@ elif task == "Channel Activity":
                 st.line_chart(df_trend.set_index('date')['posts'])
     except Exception as e:
         st.warning(f"Could not load channel activity: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 conn.close()
