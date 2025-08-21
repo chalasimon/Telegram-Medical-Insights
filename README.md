@@ -166,13 +166,20 @@ The entire pipeline is orchestrated using Dagster. Each step (scraping, loading,
 ## Business Insights & Dashboard
 
 The Streamlit dashboard provides:
-- Product search and time series analysis
-- Top mentioned products (bar chart, pie chart, summary)
+- Product search and interactive time series analysis
+- Top mentioned products (bar chart, summary panel)
 - Channel activity with date range and channel filters
-- Business insights panels (e.g., most active channel, total messages)
+- Modern business insights panels (e.g., most active channel, total messages, average per day, top product)
+- Visually appealing metrics cards with icons and gradient borders
 - Trend visualizations for message and channel activity
 
-This makes the project immediately valuable for finance and business stakeholders, enabling data-driven decisions and risk analysis.
+Recent improvements:
+- Enhanced dashboard UI with sidebar navigation and professional styling
+- Metrics cards with icons and gradient borders for stakeholder-friendly insights
+- Robust error handling for date conversion and anomaly detection
+- Modular code structure and clear documentation
+
+This makes the project immediately valuable for finance and business stakeholders, enabling data-driven decisions, risk analysis, and actionable insights.
 
 ## Contributing
 Contributions are welcome! Please follow these steps:
