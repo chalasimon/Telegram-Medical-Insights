@@ -107,7 +107,6 @@ if task == "Search Products":
             enable_enterprise_modules=False
         )
         selected = grid_response.get('selected_rows', [])
-        st.write("Selected rows from AgGrid:", selected)
         if selected:
             selected_row = selected[0]
             st.write("Selected row dict:", selected_row)
