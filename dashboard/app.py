@@ -89,8 +89,32 @@ if task == "Search Products":
         if len(date_range) == 2:
             query += " AND date BETWEEN %s AND %s"
             params.extend([date_range[0], date_range[1]])
-        # Removed LIMIT to show all available data
         df_search = pd.read_sql(query, conn, params=params if params else None)
+        # Metrics cards (Business Insights)
+        total_messages = len(df_search)
+        avg_per_day = None
+        most_active_day = None
+        top_channel = None
+        top_product = None
+        if 'date' in df_search.columns and not df_search.empty:
+            # Robust datetime conversion, drop invalids
+            df_search['date'] = pd.to_datetime(df_search['date'], errors='coerce')
+            valid_dates = df_search.dropna(subset=['date'])
+            if not valid_dates.empty:
+                daily_counts = valid_dates.groupby(valid_dates['date'].dt.date).size().reset_index(name='count')
+                avg_per_day = int(daily_counts['count'].mean())
+                most_active_day = daily_counts.loc[daily_counts['count'].idxmax(), 'date']
+        if 'channel_id' in df_search.columns and not df_search.empty:
+            top_channel = df_search['channel_id'].value_counts().idxmax()
+        if 'message' in df_search.columns and not df_search.empty:
+            top_product = df_search['message'].value_counts().idxmax()
+        # Display metrics as cards
+        col1, col2, col3, col4, col5 = st.columns(5)
+        col1.metric("Total Messages", total_messages)
+        col2.metric("Avg/Day", avg_per_day if avg_per_day else "-")
+        col3.metric("Most Active Day", str(most_active_day) if most_active_day else "-")
+        col4.metric("Top Channel", str(top_channel) if top_channel else "-")
+        col5.metric("Top Product", str(top_product) if top_product else "-")
         # Ensure message_id is string for AgGrid compatibility and reset index for selection reliability
         if 'message_id' in df_search.columns:
             df_search['message_id'] = df_search['message_id'].astype(str)
@@ -117,33 +141,35 @@ if task == "Search Products":
                 st.success(f"Selected message_id: {msg_id}")
             else:
                 st.info("No message_id found in selected row.")
-        # Time series visualization
+        # Time series visualization and anomaly detection
         if 'date' in df_search.columns and not df_search.empty:
-            df_search['date'] = pd.to_datetime(df_search['date'])
-            daily_counts = df_search.groupby(df_search['date'].dt.date).size().reset_index(name='count')
-            threshold = daily_counts['count'].mean() + 2 * daily_counts['count'].std()
-            anomalies = daily_counts[daily_counts['count'] > threshold]
-            # Stakeholder-friendly anomaly explanation
-            st.markdown("""
-                <div style='background:#fffbe6;color:#222;border-radius:8px;padding:1em;margin-bottom:1em;'>
-                <b>What is an anomaly?</b><br>
-                An anomaly is a day where the number of messages is much higher than usual. This could indicate unusual activity, a trending topic, or a potential risk event. <br>
-                <b>How is it detected?</b><br>
-                We flag days where message volume exceeds <b>2 standard deviations above the average</b> as anomalies.<br>
-                </div>
-            """, unsafe_allow_html=True)
-            fig = px.line(daily_counts, x='date', y='count', title='Message Frequency Over Time', markers=True)
-            # Highlight anomaly points on the chart
-            if not anomalies.empty:
-                fig.add_scatter(x=anomalies['date'], y=anomalies['count'], mode='markers', marker=dict(color='red', size=12), name='Anomaly')
-                st.plotly_chart(fig, use_container_width=True)
-                st.error(f"Anomaly detected! On {', '.join(anomalies['date'].astype(str))}, message volume was unusually high (> {int(threshold)} messages). Please review these dates for possible events or risks.")
-            else:
-                st.plotly_chart(fig, use_container_width=True)
-                st.info("No anomalies detected. Message volume is within normal range.")
+            df_search['date'] = pd.to_datetime(df_search['date'], errors='coerce')
+            valid_dates = df_search.dropna(subset=['date'])
+            if not valid_dates.empty:
+                daily_counts = valid_dates.groupby(valid_dates['date'].dt.date).size().reset_index(name='count')
+                threshold = daily_counts['count'].mean() + 2 * daily_counts['count'].std()
+                anomalies = daily_counts[daily_counts['count'] > threshold]
+                st.markdown("""
+                    <div style='background:#fffbe6;color:#222;border-radius:8px;padding:1em;margin-bottom:1em;'>
+                    <b>What is an anomaly?</b><br>
+                    An anomaly is a day where the number of messages is much higher than usual. This could indicate unusual activity, a trending topic, or a potential risk event. <br>
+                    <b>How is it detected?</b><br>
+                    We flag days where message volume exceeds <b>2 standard deviations above the average</b> as anomalies.<br>
+                    </div>
+                """, unsafe_allow_html=True)
+                fig = px.line(daily_counts, x='date', y='count', title='Message Frequency Over Time', markers=True)
+                if not anomalies.empty:
+                    fig.add_scatter(x=anomalies['date'], y=anomalies['count'], mode='markers', marker=dict(color='red', size=12), name='Anomaly')
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.error(f"Anomaly detected! On {', '.join(anomalies['date'].astype(str))}, message volume was unusually high (> {int(threshold)} messages). Please review these dates for possible events or risks.")
+                else:
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.info("No anomalies detected. Message volume is within normal range.")
     except Exception as e:
         st.warning(f"Could not search messages: {e}")
     st.markdown('</div>', unsafe_allow_html=True)
+
+  
 
 elif task == "Top Mentioned Products":
     
