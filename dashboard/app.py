@@ -122,13 +122,26 @@ if task == "Search Products":
         if 'date' in df_search.columns and not df_search.empty:
             df_search['date'] = pd.to_datetime(df_search['date'])
             daily_counts = df_search.groupby(df_search['date'].dt.date).size().reset_index(name='count')
-            fig = px.line(daily_counts, x='date', y='count', title='Message Frequency Over Time', markers=True)
-            st.plotly_chart(fig, use_container_width=True)
-            # Simple anomaly indicator: highlight days with unusually high message counts
             threshold = daily_counts['count'].mean() + 2 * daily_counts['count'].std()
             anomalies = daily_counts[daily_counts['count'] > threshold]
+            # Stakeholder-friendly anomaly explanation
+            st.markdown("""
+                <div style='background:#fffbe6;color:#222;border-radius:8px;padding:1em;margin-bottom:1em;'>
+                <b>What is an anomaly?</b><br>
+                An anomaly is a day where the number of messages is much higher than usual. This could indicate unusual activity, a trending topic, or a potential risk event. <br>
+                <b>How is it detected?</b><br>
+                We flag days where message volume exceeds <b>2 standard deviations above the average</b> as anomalies.<br>
+                </div>
+            """, unsafe_allow_html=True)
+            fig = px.line(daily_counts, x='date', y='count', title='Message Frequency Over Time', markers=True)
+            # Highlight anomaly points on the chart
             if not anomalies.empty:
-                st.warning(f"Anomaly detected on: {', '.join(anomalies['date'].astype(str))} (messages > {int(threshold)})")
+                fig.add_scatter(x=anomalies['date'], y=anomalies['count'], mode='markers', marker=dict(color='red', size=12), name='Anomaly')
+                st.plotly_chart(fig, use_container_width=True)
+                st.error(f"Anomaly detected! On {', '.join(anomalies['date'].astype(str))}, message volume was unusually high (> {int(threshold)} messages). Please review these dates for possible events or risks.")
+            else:
+                st.plotly_chart(fig, use_container_width=True)
+                st.info("No anomalies detected. Message volume is within normal range.")
     except Exception as e:
         st.warning(f"Could not search messages: {e}")
     st.markdown('</div>', unsafe_allow_html=True)
