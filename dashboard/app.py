@@ -52,6 +52,20 @@ try:
 except Exception as e:
     st.warning(f"Could not search messages: {e}")
 
+# Additional filters
+min_length = st.slider("Minimum message length", min_value=0, max_value=500, value=0, help="Filter messages by minimum length.")
+# Example: If you have product categories in your data
+category_options = ["All"] + list(df_search['product_category'].unique()) if 'product_category' in df_search.columns else []
+selected_category = st.selectbox("Product Category", options=category_options, help="Filter by product category.")
+
+# Update query logic
+if min_length > 0:
+    query += " AND LENGTH(message) >= %s"
+    params.append(min_length)
+if selected_category and selected_category != "All":
+    query += " AND product_category = %s"
+    params.append(selected_category)
+
 # Example: Top Products
 st.header("Top Mentioned Products")
 product_filter = st.text_input("Filter products:", help="Type to filter top products.")

@@ -61,3 +61,35 @@ Runtime Error
 [0m08:36:31.175030 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x76838d45a4e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x76838c6c7260>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x76838ce58560>]}
 [0m08:36:31.175749 [debug] [MainThread]: Flushing usage events
 [0m08:36:32.078587 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m01:37:39.063363 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x78e83bacfbc0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x78e83baccbf0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x78e83bb5da00>]}
+
+
+============================== 01:37:39.090715 | b5f8777d-00ba-48b3-b6d9-82d0d535f86e ==============================
+[0m01:37:39.090715 [info ] [MainThread]: Running with dbt=1.10.9
+[0m01:37:39.091751 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/home/chalasimon/.dbt', 'version_check': 'True', 'debug': 'False', 'log_path': 'logs', 'warn_error': 'None', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'introspect': 'True', 'static_parser': 'True', 'invocation_command': 'dbt run', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True'}
+[0m01:37:39.092482 [error] [MainThread]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path /home/chalasimon/Documents/10academy/week 7/challenge/Telegram-Medical-Insights/dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m01:37:39.106726 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": false, "command_wall_clock_time": 0.1459299, "process_in_blocks": "30544", "process_kernel_time": 0.296127, "process_mem_max_rss": "98720", "process_out_blocks": "8", "process_user_time": 2.080787}
+[0m01:37:39.107596 [debug] [MainThread]: Command `dbt run` failed at 01:37:39.107422 after 0.15 seconds
+[0m01:37:39.108381 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x78e83b5b4ad0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x78e83bce9d30>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x78e83baccbf0>]}
+[0m01:37:39.109259 [debug] [MainThread]: Flushing usage events
+[0m01:37:40.841049 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m01:38:27.243661 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x760abd117d70>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x760abce99700>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x760abce9a4b0>]}
+
+
+============================== 01:38:27.247097 | 53ed4898-0832-4b4d-b970-acb3fa0d0b8c ==============================
+[0m01:38:27.247097 [info ] [MainThread]: Running with dbt=1.10.9
+[0m01:38:27.248123 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'fail_fast': 'False', 'log_path': 'logs', 'debug': 'False', 'profiles_dir': '/home/chalasimon/.dbt', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'invocation_command': 'dbt run', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m01:38:27.249240 [error] [MainThread]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path /home/chalasimon/Documents/10academy/week 7/challenge/Telegram-Medical-Insights/dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m01:38:27.250458 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": false, "command_wall_clock_time": 0.072918825, "process_in_blocks": "0", "process_kernel_time": 0.166662, "process_mem_max_rss": "98992", "process_out_blocks": "16", "process_user_time": 1.653654}
+[0m01:38:27.251256 [debug] [MainThread]: Command `dbt run` failed at 01:38:27.251120 after 0.07 seconds
+[0m01:38:27.251765 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x760abca72000>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x760abd6c8ec0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x760abd33ec60>]}
+[0m01:38:27.252291 [debug] [MainThread]: Flushing usage events
+[0m01:38:28.375052 [debug] [MainThread]: An error was encountered while trying to flush usage events
