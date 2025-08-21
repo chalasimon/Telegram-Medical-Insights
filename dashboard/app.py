@@ -1,3 +1,4 @@
+import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder
 from st_aggrid.shared import GridUpdateMode
 import streamlit as st
@@ -120,7 +121,14 @@ if task == "Search Products":
         # Time series visualization
         if 'date' in df_search.columns and not df_search.empty:
             df_search['date'] = pd.to_datetime(df_search['date'])
-            st.line_chart(df_search.groupby(df_search['date'].dt.date).size())
+            daily_counts = df_search.groupby(df_search['date'].dt.date).size().reset_index(name='count')
+            fig = px.line(daily_counts, x='date', y='count', title='Message Frequency Over Time', markers=True)
+            st.plotly_chart(fig, use_container_width=True)
+            # Simple anomaly indicator: highlight days with unusually high message counts
+            threshold = daily_counts['count'].mean() + 2 * daily_counts['count'].std()
+            anomalies = daily_counts[daily_counts['count'] > threshold]
+            if not anomalies.empty:
+                st.warning(f"Anomaly detected on: {', '.join(anomalies['date'].astype(str))} (messages > {int(threshold)})")
     except Exception as e:
         st.warning(f"Could not search messages: {e}")
     st.markdown('</div>', unsafe_allow_html=True)
