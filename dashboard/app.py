@@ -1,12 +1,15 @@
+import plotly.express as px
+from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid.shared import GridUpdateMode
 import streamlit as st
 import pandas as pd
 import psycopg2
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.database.Connection import Database
 
-st.title("Telegram Medical Insights Dashboard")
 
 # Database connection
 host = "localhost"
@@ -29,83 +32,265 @@ db = Database(host=host,database=dbname, user=user, password=password, port=port
 conn = db.connect()
 
 
-# Example: Product Search
-st.header("Search Products")
-search_term = st.text_input("Enter keyword to search products:", help="Type a product or keyword to filter messages.")
-date_range = st.date_input("Select date range:", [])
-try:
-    query = "SELECT message_id, channel_id, message, date FROM fct_messages WHERE TRUE"
-    params = []
-    if search_term:
-        query += " AND message ILIKE %s"
-        params.append(f"%{search_term}%")
-    if len(date_range) == 2:
-        query += " AND date BETWEEN %s AND %s"
-        params.extend([date_range[0], date_range[1]])
-    query += " LIMIT 50;"
-    df_search = pd.read_sql(query, conn, params=params if params else None)
-    st.write(df_search)
-    # Time series visualization
-    if 'date' in df_search.columns and not df_search.empty:
-        df_search['date'] = pd.to_datetime(df_search['date'])
-        st.line_chart(df_search.groupby(df_search['date'].dt.date).size())
-except Exception as e:
-    st.warning(f"Could not search messages: {e}")
 
-# Example: Top Products
-st.header("Top Mentioned Products")
-product_filter = st.text_input("Filter products:", help="Type to filter top products.")
-try:
-    query = "SELECT message as product_name, COUNT(*) as mention_count FROM fct_messages GROUP BY message ORDER BY mention_count DESC LIMIT 10;"
-    df_products = pd.read_sql(query, conn)
-    if product_filter:
-        df_products = df_products[df_products['product_name'].str.contains(product_filter, case=False, na=False)]
-    st.bar_chart(df_products.set_index("product_name"))
-    st.subheader("Summary Panel")
-    st.write(f"Total unique products: {df_products['product_name'].nunique()}")
-    st.write(f"Most mentioned product: {df_products.loc[df_products['mention_count'].idxmax(), 'product_name']} ({df_products['mention_count'].max()} mentions)")
-    st.write(df_products.describe())
-except Exception as e:
-    st.warning(f"Could not load top products: {e}")
+# Using "with" notation
+with st.sidebar:
+    st.markdown("""
+        <style>
+        .sidebar-title {font-size:2em; font-weight:bold; color:#2c3e50; margin-bottom:0.5em;}
+        .sidebar-nav .active {background-color:#e1eafc; color:#1a73e8; font-weight:bold; border-radius:8px;}
+        .sidebar-nav button {width:100%; text-align:left; margin-bottom:0.5em; font-size:1.1em;}
+        </style>
+    """, unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-title">🩺 Dashboard</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("## Navigation")
+    nav_options = [
+        ("Search Products", "🔍 Search Products"),
+        ("Top Mentioned Products", "🏆 Top Mentioned Products"),
+        ("Channel Activity", "📊 Channel Activity")
+    ]
+    if "sidebar_task" not in st.session_state:
+        st.session_state["sidebar_task"] = nav_options[0][0]
+    for option, label in nav_options:
+        if st.session_state["sidebar_task"] == option:
+            btn_style = "sidebar-nav active"
+        else:
+            btn_style = "sidebar-nav"
+        if st.button(label, key=option):
+            st.session_state["sidebar_task"] = option
+    task = st.session_state["sidebar_task"]
+   
 
-# Example: Channel Activity
-st.header("Channel Activity")
-try:
-    # Channel filter
-    query_channels = "SELECT DISTINCT channel_id FROM fct_messages;"
-    df_channel_list = pd.read_sql(query_channels, conn)
-    channel_options = df_channel_list['channel_id'].tolist()
-    selected_channel = st.selectbox("Select Channel", options=["All"] + channel_options, help="Choose a channel to filter activity.")
-    date_range_channel = st.date_input("Select date range for channel activity:", [])
-    if selected_channel == "All":
-        query = "SELECT channel_id, COUNT(*) AS total_posts FROM fct_messages WHERE TRUE"
+
+
+
+# Professional dashboard layout
+st.markdown("""
+    <style>
+    .main-title {font-size:2.5em; font-weight:bold; color:#1a73e8; margin-bottom:0.2em;}
+    .main-section {background-color:#f8fafc; border-radius:12px; padding:2em 2em 1em 2em; margin-bottom:2em; box-shadow:0 2px 8px #e1eafc;}
+    .section-header {font-size:1.5em; font-weight:bold; color:#2c3e50; margin-bottom:1em;}
+    </style>
+""", unsafe_allow_html=True)
+st.markdown('<div class="main-title">Telegram Medical Insights Dashboard</div>', unsafe_allow_html=True)
+
+if task == "Search Products":
+
+    st.markdown('<div class="section-header">🔍 Search Products</div>', unsafe_allow_html=True)
+    search_term = st.text_input("Enter keyword to search products:", help="Type a product or keyword to filter messages.")
+    date_range = st.date_input("Select date range:", [])
+    try:
+        query = "SELECT message_id, channel_id, message, date FROM fct_messages WHERE TRUE"
         params = []
-        if len(date_range_channel) == 2:
+        if search_term:
+            query += " AND message ILIKE %s"
+            params.append(f"%{search_term}%")
+        if len(date_range) == 2:
             query += " AND date BETWEEN %s AND %s"
-            params.extend([date_range_channel[0], date_range_channel[1]])
-        query += " GROUP BY channel_id"
-        df_channels = pd.read_sql(query, conn, params=params if params else None)
-    else:
-        query = "SELECT channel_id, COUNT(*) AS total_posts FROM fct_messages WHERE channel_id = %s"
-        params = [selected_channel]
-        if len(date_range_channel) == 2:
-            query += " AND date BETWEEN %s AND %s"
-            params.extend([date_range_channel[0], date_range_channel[1]])
-        query += " GROUP BY channel_id"
-        df_channels = pd.read_sql(query, conn, params=params)
-    st.dataframe(df_channels)
-    # Business insights panel
-    st.subheader("Business Insights")
-    if not df_channels.empty:
-        st.write(f"Channel with most posts: {df_channels.loc[df_channels['total_posts'].idxmax(), 'channel_id']} ({df_channels['total_posts'].max()} posts)")
-        st.write(f"Total messages in selected range: {df_channels['total_posts'].sum()}")
-        # Trend visualization
-        if len(date_range_channel) == 2:
-            query_trend = "SELECT date::date, COUNT(*) as posts FROM fct_messages WHERE date BETWEEN %s AND %s GROUP BY date::date ORDER BY date::date"
-            df_trend = pd.read_sql(query_trend, conn, params=[date_range_channel[0], date_range_channel[1]])
-            st.line_chart(df_trend.set_index('date')['posts'])
-except Exception as e:
-    st.warning(f"Could not load channel activity: {e}")
+            params.extend([date_range[0], date_range[1]])
+        df_search = pd.read_sql(query, conn, params=params if params else None)
+        # Metrics cards (Business Insights)
+        total_messages = len(df_search)
+        avg_per_day = None
+        most_active_day = None
+        top_channel = None
+        top_product = None
+        if 'date' in df_search.columns and not df_search.empty:
+            # Robust datetime conversion, drop invalids
+            df_search['date'] = pd.to_datetime(df_search['date'], errors='coerce')
+            valid_dates = df_search.dropna(subset=['date'])
+            if not valid_dates.empty:
+                daily_counts = valid_dates.groupby(valid_dates['date'].dt.date).size().reset_index(name='count')
+                avg_per_day = int(daily_counts['count'].mean())
+                most_active_day = daily_counts.loc[daily_counts['count'].idxmax(), 'date']
+        if 'channel_id' in df_search.columns and not df_search.empty:
+            top_channel = df_search['channel_id'].value_counts().idxmax()
+        if 'message' in df_search.columns and not df_search.empty:
+            top_product = df_search['message'].value_counts().idxmax()
+        # Beautified metrics cards with icons and custom font size
+        st.markdown("""
+        <style>
+        .metric-card {
+            border: 1px solid gray;
+            border-radius: 12px;
+            padding: 1.2em 0.5em 1em 0.5em;
+            margin-bottom: 1.5em;
+            text-align: center;
+        }
+        .metric-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #1a7358;
+            margin-bottom: 0.2em;
+        }
+        .metric-value {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #888;
+            overflow-wrap: break-word;
+        }
+        .metric-icon {
+            font-size: 2em;
+            margin-bottom: 0.1em;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        col1, col2, col3, col4, col5 = st.columns(5)
+        with col1:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>📨</div>
+                <div class='metric-title'>Total Messages</div>
+                <div class='metric-value'>{total_messages}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>📅</div>
+                <div class='metric-title'>Avg/Day</div>
+                <div class='metric-value'>{avg_per_day if avg_per_day else '-'} </div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>🔥</div>
+                <div class='metric-title'>Most Active Day</div>
+                <div class='metric-value'>{str(most_active_day) if most_active_day else '-'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col4:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>📢</div>
+                <div class='metric-title'>Top Channel</div>
+                <div class='metric-value'>{str(top_channel) if top_channel else '-'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col5:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>💊</div>
+                <div class='metric-title'>Top Product</div>
+                <div class='metric-value'>{str(top_product) if top_product else '-'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        # Ensure message_id is string for AgGrid compatibility and reset index for selection reliability
+        if 'message_id' in df_search.columns:
+            df_search['message_id'] = df_search['message_id'].astype(str)
+        df_search = df_search.reset_index(drop=True)
+        gb = GridOptionsBuilder.from_dataframe(df_search)
+        gb.configure_selection('single')
+        grid_options = gb.build()
+        grid_response = AgGrid(
+            df_search,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            height=350,
+            theme='streamlit',
+            enable_enterprise_modules=False
+        )
+        selected = grid_response.get('selected_rows', [])
+        if selected:
+            selected_row = selected[0]
+            st.write("Selected row dict:", selected_row)
+            st.write("Selected row keys:", list(selected_row.keys()))
+            msg_id = selected_row.get('message_id', None)
+            st.write("Extracted message_id:", msg_id)
+            if msg_id is not None:
+                st.success(f"Selected message_id: {msg_id}")
+            else:
+                st.info("No message_id found in selected row.")
+        # Time series visualization and anomaly detection
+        if 'date' in df_search.columns and not df_search.empty:
+            df_search['date'] = pd.to_datetime(df_search['date'], errors='coerce')
+            valid_dates = df_search.dropna(subset=['date'])
+            if not valid_dates.empty:
+                daily_counts = valid_dates.groupby(valid_dates['date'].dt.date).size().reset_index(name='count')
+                threshold = daily_counts['count'].mean() + 2 * daily_counts['count'].std()
+                anomalies = daily_counts[daily_counts['count'] > threshold]
+                st.markdown("""
+                    <div style='background:#fffbe6;color:#222;border-radius:8px;padding:1em;margin-bottom:1em;'>
+                    <b>What is an anomaly?</b><br>
+                    An anomaly is a day where the number of messages is much higher than usual. This could indicate unusual activity, a trending topic, or a potential risk event. <br>
+                    <b>How is it detected?</b><br>
+                    We flag days where message volume exceeds <b>2 standard deviations above the average</b> as anomalies.<br>
+                    </div>
+                """, unsafe_allow_html=True)
+                fig = px.line(daily_counts, x='date', y='count', title='Message Frequency Over Time', markers=True)
+                if not anomalies.empty:
+                    fig.add_scatter(x=anomalies['date'], y=anomalies['count'], mode='markers', marker=dict(color='red', size=12), name='Anomaly')
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.error(f"Anomaly detected! On {', '.join(anomalies['date'].astype(str))}, message volume was unusually high (> {int(threshold)} messages). Please review these dates for possible events or risks.")
+                else:
+                    st.plotly_chart(fig, use_container_width=True)
+                    st.info("No anomalies detected. Message volume is within normal range.")
+    except Exception as e:
+        st.warning(f"Could not search messages: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+  
+
+elif task == "Top Mentioned Products":
+    
+    st.markdown('<div class="section-header">🏆 Top Mentioned Products</div>', unsafe_allow_html=True)
+    product_filter = st.text_input("Filter products:", help="Type to filter top products.")
+    try:
+        query = "SELECT message as product_name, COUNT(*) as mention_count FROM fct_messages GROUP BY message ORDER BY mention_count DESC LIMIT 10;"
+        df_products = pd.read_sql(query, conn)
+        if product_filter:
+            df_products = df_products[df_products['product_name'].str.contains(product_filter, case=False, na=False)]
+        st.bar_chart(df_products.set_index("product_name"))
+        st.subheader("Summary Panel")
+        st.write(f"Total unique products: {df_products['product_name'].nunique()}")
+        st.write(f"Most mentioned product: {df_products.loc[df_products['mention_count'].idxmax(), 'product_name']} ({df_products['mention_count'].max()} mentions)")
+        st.write(df_products.describe())
+    except Exception as e:
+        st.warning(f"Could not load top products: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif task == "Channel Activity":
+    
+    st.markdown('<div class="section-header">📊 Channel Activity</div>', unsafe_allow_html=True)
+    try:
+        # Channel filter
+        query_channels = "SELECT DISTINCT channel_id FROM fct_messages;"
+        df_channel_list = pd.read_sql(query_channels, conn)
+        channel_options = df_channel_list['channel_id'].tolist()
+        selected_channel = st.selectbox("Select Channel", options=["All"] + channel_options, help="Choose a channel to filter activity.")
+        date_range_channel = st.date_input("Select date range for channel activity:", [])
+        if selected_channel == "All":
+            query = "SELECT channel_id, COUNT(*) AS total_posts FROM fct_messages WHERE TRUE"
+            params = []
+            if len(date_range_channel) == 2:
+                query += " AND date BETWEEN %s AND %s"
+                params.extend([date_range_channel[0], date_range_channel[1]])
+            query += " GROUP BY channel_id"
+            df_channels = pd.read_sql(query, conn, params=params if params else None)
+        else:
+            query = "SELECT channel_id, COUNT(*) AS total_posts FROM fct_messages WHERE channel_id = %s"
+            params = [selected_channel]
+            if len(date_range_channel) == 2:
+                query += " AND date BETWEEN %s AND %s"
+                params.extend([date_range_channel[0], date_range_channel[1]])
+            query += " GROUP BY channel_id"
+            df_channels = pd.read_sql(query, conn, params=params)
+        st.dataframe(df_channels, use_container_width=True)
+        # Business insights panel
+        st.subheader("Business Insights")
+        if not df_channels.empty:
+            st.write(f"Channel with most posts: {df_channels.loc[df_channels['total_posts'].idxmax(), 'channel_id']} ({df_channels['total_posts'].max()} posts)")
+            st.write(f"Total messages in selected range: {df_channels['total_posts'].sum()}")
+            # Trend visualization
+            if len(date_range_channel) == 2:
+                query_trend = "SELECT date::date, COUNT(*) as posts FROM fct_messages WHERE date BETWEEN %s AND %s GROUP BY date::date ORDER BY date::date"
+                df_trend = pd.read_sql(query_trend, conn, params=[date_range_channel[0], date_range_channel[1]])
+                st.line_chart(df_trend.set_index('date')['posts'])
+    except Exception as e:
+        st.warning(f"Could not load channel activity: {e}")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 conn.close()
