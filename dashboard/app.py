@@ -108,13 +108,75 @@ if task == "Search Products":
             top_channel = df_search['channel_id'].value_counts().idxmax()
         if 'message' in df_search.columns and not df_search.empty:
             top_product = df_search['message'].value_counts().idxmax()
-        # Display metrics as cards
+        # Beautified metrics cards with icons and custom font size
+        st.markdown("""
+        <style>
+        .metric-card {
+            border: 1px solid gray;
+            border-radius: 12px;
+            padding: 1.2em 0.5em 1em 0.5em;
+            margin-bottom: 1.5em;
+            text-align: center;
+        }
+        .metric-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #1a7358;
+            margin-bottom: 0.2em;
+        }
+        .metric-value {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #888;
+            overflow-wrap: break-word;
+        }
+        .metric-icon {
+            font-size: 2em;
+            margin-bottom: 0.1em;
+        }
+        </style>
+        """, unsafe_allow_html=True)
         col1, col2, col3, col4, col5 = st.columns(5)
-        col1.metric("Total Messages", total_messages)
-        col2.metric("Avg/Day", avg_per_day if avg_per_day else "-")
-        col3.metric("Most Active Day", str(most_active_day) if most_active_day else "-")
-        col4.metric("Top Channel", str(top_channel) if top_channel else "-")
-        col5.metric("Top Product", str(top_product) if top_product else "-")
+        with col1:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>📨</div>
+                <div class='metric-title'>Total Messages</div>
+                <div class='metric-value'>{total_messages}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>📅</div>
+                <div class='metric-title'>Avg/Day</div>
+                <div class='metric-value'>{avg_per_day if avg_per_day else '-'} </div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>🔥</div>
+                <div class='metric-title'>Most Active Day</div>
+                <div class='metric-value'>{str(most_active_day) if most_active_day else '-'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col4:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>📢</div>
+                <div class='metric-title'>Top Channel</div>
+                <div class='metric-value'>{str(top_channel) if top_channel else '-'}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col5:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div class='metric-icon'>💊</div>
+                <div class='metric-title'>Top Product</div>
+                <div class='metric-value'>{str(top_product) if top_product else '-'}</div>
+            </div>
+            """, unsafe_allow_html=True)
         # Ensure message_id is string for AgGrid compatibility and reset index for selection reliability
         if 'message_id' in df_search.columns:
             df_search['message_id'] = df_search['message_id'].astype(str)
